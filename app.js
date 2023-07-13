@@ -4,13 +4,13 @@ const port = 3000;
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
-const {campgroundValidation} = require('./helpers/schemaValidation');
+const {campgroundValidation, reviewValidation} = require('./helpers/schemaValidation');
 const catchAsync = require('./helpers/catchAsync');
 const ExpressError = require('./helpers/expressError');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 const Review = require('./models/review');
-const review = require('./models/review');
+
 
 //test
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp', {
@@ -75,13 +75,20 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
   res.redirect('/campgrounds');
 }))
 
-app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
+app.post('/campgrounds/:id/reviews', reviewValidation ,catchAsync(async(req, res) => {
   const campground = await Campground.findById(req.params.id);
   const review = new Review(req.body.review);
   campground.reviews.push(review);
   await review.save();
   await campground.save();
   res.redirect(`/campgrounds/${campground._id}`)
+}))
+
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
+  const { id, reviewId } = req.params;
+  await Campground.findByIdAndUpdate(id, {$pull: {reviews: reviewId}});
+  await Review.findByIdAndDelete(reviewId);
+  res.redirect(`/campgrounds/${id}`);
 }))
 
 app.all('*', (req, res, next) => {
