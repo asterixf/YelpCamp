@@ -8,8 +8,9 @@ const session = require('express-session');
 const ExpressError = require('./helpers/expressError');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
-const campgrounds = require('./routes/campgrounds');
-const reviews = require('./routes/reviews');
+const campgroundRoutes = require('./routes/campgrounds');
+const reviewRoutes = require('./routes/reviews');
+const userRoutes = require('./routes/users');
 const passport = require('passport');
 const localSatrategy = require('passport-local');
 const User = require('./models/user');
@@ -61,8 +62,9 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use('/campgrounds', campgrounds);
-app.use('/campgrounds', reviews);
+app.use('/campgrounds', campgroundRoutes);
+app.use('/campgrounds', reviewRoutes);
+app.use('/', userRoutes);
 
 app.get('/', (req, res) => {
   res.render('home')
